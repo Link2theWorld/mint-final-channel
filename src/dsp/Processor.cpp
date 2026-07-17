@@ -373,6 +373,10 @@ public:
     reverb_.prepare(sampleRate_);
     loudness_.prepare(sampleRate_);
     limiter_.prepare(sampleRate_);
+    fixedLatency_ = SpectralDenoiser::kFftSize +
+      static_cast<int>(std::ceil(0.020 * sampleRate_));
+    compensationL_.assign(static_cast<std::size_t>(fixedLatency_ + 1), 0.0f);
+    compensationR_.assign(static_cast<std::size_t>(fixedLatency_ + 1), 0.0f);
     reset();
   }
 
@@ -385,6 +389,9 @@ public:
     reverb_.reset();
     loudness_.reset();
     limiter_.reset();
+    std::fill(compensationL_.begin(), compensationL_.end(), 0.0f);
+    std::fill(compensationR_.begin(), compensationR_.end(), 0.0f);
+    compensationWrite_ = 0;
     meters_ = {};
   }
 
@@ -406,6 +413,11 @@ public:
     const float inputGain = dbToGain(params_.inputGainDb);
     const float outputGain = dbToGain(params_.outputGainDb);
     const float limiterInput = dbToGain(params_.limiterInputGainDb);
+    const int activeLatency = params_.masterBypass ? 0 :
+      ((params_.denoiseEnabled || params_.autoClean) ? SpectralDenoiser::kFftSize : 0) +
+      ((params_.limiterEnabled || params_.autoClean)
+        ? static_cast<int>(params_.limiterLookaheadMs * 0.001 * sampleRate_) : 0);
+    const int compensationDelay = std::clamp(fixedLatency_ - activeLatency, 0, fixedLatency_);
 
     for (int sample = 0; sample < frames; ++sample) {
       float left = inputs[0] != nullptr ? inputs[0][sample] : 0.0f;
@@ -421,7 +433,9 @@ public:
           right = denoisers_[1].process(right);
         }
         if (params_.eqEnabled) processEq(left, right);
-        if (params_.compressorEnabled) compressor_.process(left, right, params_);
+        if (params_.compressorEnabled || params_.autoClean) {
+          compressor_.process(left, right, params_);
+        }
         if (params_.reverbEnabled) reverb_.process(left, right, params_);
         if (params_.loudnessEnabled || params_.autoClean) {
           loudness_.process(left, right, params_);
@@ -438,6 +452,17 @@ public:
           left = std::clamp(left, -ceiling, ceiling);
           right = std::clamp(right, -ceiling, ceiling);
         }
+      }
+
+      if (!compensationL_.empty()) {
+        compensationL_[compensationWrite_] = left;
+        compensationR_[compensationWrite_] = right;
+        const std::size_t delay = static_cast<std::size_t>(compensationDelay);
+        const std::size_t read = (compensationWrite_ + compensationL_.size() - delay) %
+                                 compensationL_.size();
+        left = compensationL_[read];
+        right = compensationR_[read];
+        compensationWrite_ = (compensationWrite_ + 1) % compensationL_.size();
       }
 
       if (outputs[0] != nullptr) outputs[0][sample] = left;
@@ -510,6 +535,10 @@ public:
   FdnReverb reverb_;
   LoudnessFollower loudness_;
   LookaheadLimiter limiter_;
+  std::vector<float> compensationL_;
+  std::vector<float> compensationR_;
+  std::size_t compensationWrite_ = 0;
+  int fixedLatency_ = 0;
 };
 
 Processor::Processor() : impl_(std::make_unique<Impl>()) {}
@@ -532,13 +561,7 @@ const ParameterState& Processor::parameters() const noexcept {
 }
 
 int Processor::latencySamples() const noexcept {
-  const auto& p = impl_->params_;
-  if (p.masterBypass) return 0;
-  const int denoiseLatency = (p.denoiseEnabled || p.autoClean)
-    ? SpectralDenoiser::kFftSize : 0;
-  const int limiterLatency = (p.limiterEnabled || p.autoClean)
-    ? static_cast<int>(p.limiterLookaheadMs * 0.001 * impl_->sampleRate_) : 0;
-  return denoiseLatency + limiterLatency;
+  return impl_->fixedLatency_;
 }
 
 MeterState Processor::meters() const noexcept { return impl_->meters_; }

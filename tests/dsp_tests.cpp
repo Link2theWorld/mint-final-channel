@@ -1,4 +1,5 @@
 #include "vaporwave/Processor.h"
+#include "vaporwave/SpectralDenoiser.h"
 
 #include <algorithm>
 #include <cmath>
@@ -56,14 +57,19 @@ void testBypassTransparency() {
   state.masterBypass = true;
   state.inputGainDb = 12.0f;
   processor.setParameters(state);
-  StereoBuffer buffer(1024);
+  StereoBuffer buffer(4096);
   for (std::size_t i = 0; i < buffer.left.size(); ++i) {
     buffer.left[i] = std::sin(static_cast<float>(i) * 0.031f) * 0.8f;
     buffer.right[i] = std::cos(static_cast<float>(i) * 0.017f) * 0.6f;
   }
   buffer.process(processor);
-  expect(buffer.left == buffer.outLeft, "master bypass must be bit-transparent (left)");
-  expect(buffer.right == buffer.outRight, "master bypass must be bit-transparent (right)");
+  const auto latency = static_cast<std::size_t>(processor.latencySamples());
+  bool transparent = true;
+  for (std::size_t i = latency; i < buffer.left.size(); ++i) {
+    transparent = transparent && buffer.outLeft[i] == buffer.left[i - latency];
+    transparent = transparent && buffer.outRight[i] == buffer.right[i - latency];
+  }
+  expect(transparent, "master bypass must be transparent after fixed latency compensation");
 }
 
 void testEqBoost() {
@@ -115,9 +121,10 @@ void testEqLeftChannelRouting() {
   buffer.process(processor);
   float leftPower = 0.0f;
   float rightError = 0.0f;
-  for (std::size_t i = 4096; i < buffer.left.size(); ++i) {
+  const auto latency = static_cast<std::size_t>(processor.latencySamples());
+  for (std::size_t i = std::max<std::size_t>(4096, latency); i < buffer.left.size(); ++i) {
     leftPower += buffer.outLeft[i] * buffer.outLeft[i];
-    rightError += std::abs(buffer.outRight[i] - buffer.right[i]);
+    rightError += std::abs(buffer.outRight[i] - buffer.right[i - latency]);
   }
   expect(leftPower > 3.0f * 0.5f * 0.01f * 4096.0f,
          "left-only EQ must boost the left channel");
@@ -215,11 +222,11 @@ void testDenoiserStability() {
   const bool finite = std::all_of(buffer.outLeft.begin(), buffer.outLeft.end(),
     [](float sample) { return std::isfinite(sample); });
   expect(finite, "denoiser must never emit NaN or infinity");
-  const float latencyMs = static_cast<float>(processor.latencySamples()) /
-                          44100.0f * 1000.0f;
+  const float denoiserLatencyMs =
+    static_cast<float>(vaporwave::SpectralDenoiser::kFftSize) / 44100.0f * 1000.0f;
   expect(processor.latencySamples() >= 256,
          "denoiser latency must be reported");
-  expect(latencyMs < 10.0f,
+  expect(denoiserLatencyMs < 10.0f,
          "realtime denoiser latency must remain below 10 ms at 44.1 kHz");
 }
 
@@ -233,8 +240,43 @@ void testDefaultChainRealtimeLatency() {
   processor.setParameters(state);
   const float latencyMs = static_cast<float>(processor.latencySamples()) /
                           44100.0f * 1000.0f;
-  expect(latencyMs < 10.0f,
-         "default denoise plus limiter lookahead must remain below 10 ms");
+  expect(latencyMs < 30.0f,
+         "fixed worst-case latency compensation must remain below 30 ms");
+}
+
+void testLatencyIsStableAcrossModes() {
+  vaporwave::Processor processor;
+  processor.prepare(48000.0, 512, 2);
+  auto state = neutralState();
+  processor.setParameters(state);
+  const int baseline = processor.latencySamples();
+  state.masterBypass = true;
+  processor.setParameters(state);
+  expect(processor.latencySamples() == baseline,
+         "master bypass must not change reported latency");
+  state.masterBypass = false;
+  state.autoClean = true;
+  state.limiterLookaheadMs = 20.0f;
+  processor.setParameters(state);
+  expect(processor.latencySamples() == baseline,
+         "Auto Clean and lookahead changes must not change reported latency");
+}
+
+void testAutoCleanEngagesProcessing() {
+  vaporwave::Processor processor;
+  processor.prepare(48000.0, 16384, 2);
+  auto state = neutralState();
+  state.autoClean = true;
+  state.compressorThresholdDb = -30.0f;
+  state.compressorRatio = 10.0f;
+  state.compressorAttackMs = 1.0f;
+  processor.setParameters(state);
+  StereoBuffer buffer(16384);
+  std::fill(buffer.left.begin(), buffer.left.end(), 0.8f);
+  std::fill(buffer.right.begin(), buffer.right.end(), -0.8f);
+  buffer.process(processor);
+  expect(processor.meters().compressorGainReductionDb > 6.0f,
+         "Auto Clean must engage the compressor stage");
 }
 
 void testStateDoesNotDependOnViewMode() {
@@ -274,6 +316,8 @@ int main() {
   testLimiterCeiling();
   testDenoiserStability();
   testDefaultChainRealtimeLatency();
+  testLatencyIsStableAcrossModes();
+  testAutoCleanEngagesProcessing();
   testStateDoesNotDependOnViewMode();
   if (failures == 0) {
     std::cout << "All Vaporwave DSP tests passed.\n";

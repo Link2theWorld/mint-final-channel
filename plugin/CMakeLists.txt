@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.25)
-project(VaporwaveSuitePlugin VERSION 0.1.1)
+project(VaporwaveSuitePlugin VERSION 0.1.2)
 
 set(MINT_UI_FONT_FILE "${CMAKE_CURRENT_SOURCE_DIR}/resources/fonts/VarelaRound.ttf")
 set(MINT_UI_FONT_HEADER "${CMAKE_CURRENT_BINARY_DIR}/generated/MintUIFontData.h")

@@ -55,7 +55,7 @@ struct ParameterState {
   float outputGainDb = 0.0f;
 
   bool autoClean = false;
-  bool denoiseEnabled = true;
+  bool denoiseEnabled = false;
   DenoiseEngine denoiseEngine = DenoiseEngine::Auto;
   ContentMode contentMode = ContentMode::Auto;
   float denoiseReductionDb = 12.0f;
@@ -78,7 +78,7 @@ struct ParameterState {
   float compressorSidechainHpfHz = 80.0f;
   float compressorMix = 1.0f;
 
-  bool reverbEnabled = true;
+  bool reverbEnabled = false;
   float reverbPreDelayMs = 12.0f;
   float reverbDecaySeconds = 1.2f;
   float reverbSize = 0.45f;
@@ -87,12 +87,12 @@ struct ParameterState {
   float reverbWidth = 1.0f;
   float reverbLowCutHz = 120.0f;
   float reverbHighCutHz = 12000.0f;
-  float reverbMix = 0.12f;
+  float reverbMix = 0.0f;
 
   bool loudnessEnabled = false;
   LoudnessTarget loudnessTarget = LoudnessTarget::Streaming;
 
-  bool limiterEnabled = true;
+  bool limiterEnabled = false;
   float limiterCeilingDb = -1.0f;
   float limiterInputGainDb = 0.0f;
   float limiterReleaseMs = 80.0f;
