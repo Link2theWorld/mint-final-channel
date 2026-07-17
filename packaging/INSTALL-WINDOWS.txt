@@ -1,0 +1,17 @@
+MINT Final Channel 0.1.0 - Windows x64
+========================================
+
+ENGLISH
+1. Close your DAW.
+2. Copy "MINT Final Channel.vst3" to:
+   C:\Program Files\Common Files\VST3\
+3. Restart your DAW and rescan VST3 plug-ins.
+
+中文
+1. 关闭音频宿主软件。
+2. 将“MINT Final Channel.vst3”复制到：
+   C:\Program Files\Common Files\VST3\
+3. 重新启动宿主并重新扫描 VST3 插件。
+
+The plug-in processes audio locally and makes no network connections.
+本插件完全在本机处理音频，不进行任何网络连接。

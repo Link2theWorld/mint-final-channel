@@ -1,0 +1,56 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 25,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "core-release",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/core-release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "VAPORWAVE_BUILD_TESTS": "ON",
+        "VAPORWAVE_BUILD_PLUGIN": "OFF"
+      }
+    },
+    {
+      "name": "macos-universal-vst3",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/macos-universal-vst3",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Darwin"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_OSX_ARCHITECTURES": "arm64;x86_64",
+        "VAPORWAVE_BUILD_TESTS": "ON",
+        "VAPORWAVE_BUILD_PLUGIN": "ON",
+        "IPLUG2_DIR": "$env{IPLUG2_DIR}"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "core-release",
+      "configurePreset": "core-release"
+    },
+    {
+      "name": "macos-universal-vst3",
+      "configurePreset": "macos-universal-vst3",
+      "targets": ["VaporwaveSuite-vst3"]
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "core-release",
+      "configurePreset": "core-release",
+      "output": { "outputOnFailure": true }
+    }
+  ]
+}
+

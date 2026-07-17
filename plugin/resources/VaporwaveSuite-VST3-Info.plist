@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>CFBundleDevelopmentRegion</key>
+  <string>English</string>
+  <key>CFBundleExecutable</key>
+  <string>VaporwaveSuite</string>
+  <key>CFBundleGetInfoString</key>
+  <string>Mint制作-调音的终结和最后的通道条 v0.1.0 Copyright 2026 Mint制作</string>
+  <key>CFBundleIdentifier</key>
+  <string>audio.Mint.vst3.MintFinalChannel</string>
+  <key>CFBundleInfoDictionaryVersion</key>
+  <string>6.0</string>
+  <key>CFBundleName</key>
+  <string>Mint制作-调音的终结和最后的通道条</string>
+  <key>CFBundlePackageType</key>
+  <string>BNDL</string>
+  <key>CFBundleShortVersionString</key>
+  <string>0.1.0</string>
+  <key>CFBundleSignature</key>
+  <string>Vp01</string>
+  <key>CFBundleVersion</key>
+  <string>0.1.0</string>
+  <key>CSResourcesFileMapped</key>
+  <true/>
+  <key>LSMinimumSystemVersion</key>
+  <string>10.13.0</string>
+</dict>
+</plist>

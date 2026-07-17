@@ -1,0 +1,10 @@
+/build*/
+/dist/
+/out/
+/.cache/
+/validation-results/
+/.DS_Store
+*.vst3
+*.component
+*.pdb
+*.dSYM/

@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "eq": {
+    "Flat": [],
+    "Warm": [
+      { "type": "LowShelf", "frequencyHz": 180, "gainDb": 2.0, "q": 0.7 },
+      { "type": "HighShelf", "frequencyHz": 9000, "gainDb": -1.0, "q": 0.7 }
+    ],
+    "Bright": [
+      { "type": "Bell", "frequencyHz": 3200, "gainDb": 1.5, "q": 1.0 },
+      { "type": "HighShelf", "frequencyHz": 8500, "gainDb": 2.5, "q": 0.7 }
+    ],
+    "Vocal": [
+      { "type": "HighPass", "frequencyHz": 75, "gainDb": 0, "q": 0.7 },
+      { "type": "Bell", "frequencyHz": 280, "gainDb": -2.0, "q": 1.2 },
+      { "type": "Bell", "frequencyHz": 3500, "gainDb": 2.0, "q": 1.0 }
+    ],
+    "Bass": [
+      { "type": "LowShelf", "frequencyHz": 110, "gainDb": 3.0, "q": 0.7 },
+      { "type": "Bell", "frequencyHz": 350, "gainDb": -1.5, "q": 1.1 }
+    ],
+    "Air": [
+      { "type": "HighShelf", "frequencyHz": 12000, "gainDb": 4.0, "q": 0.6 }
+    ]
+  },
+  "reverb": {
+    "Dry": { "mix": 0.0 },
+    "Room": { "preDelayMs": 8, "decaySeconds": 0.65, "size": 0.3, "damping": 0.65, "mix": 0.1 },
+    "Studio": { "preDelayMs": 14, "decaySeconds": 1.1, "size": 0.42, "damping": 0.58, "mix": 0.12 },
+    "Plate": { "preDelayMs": 20, "decaySeconds": 1.8, "size": 0.5, "damping": 0.35, "mix": 0.16 },
+    "Hall": { "preDelayMs": 28, "decaySeconds": 3.2, "size": 0.82, "damping": 0.48, "mix": 0.2 },
+    "Dream": { "preDelayMs": 45, "decaySeconds": 5.5, "size": 1.0, "damping": 0.25, "mix": 0.28 }
+  }
+}
+

@@ -1,0 +1,723 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mint制作-调音的终结和最后的通道条 — UI Preview</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #070a1c;
+      --panel: rgba(15, 23, 52, .88);
+      --panel-2: rgba(21, 30, 66, .82);
+      --blue: #37e2ff;
+      --pink: #ff4fc5;
+      --purple: #9457ff;
+      --muted: #7c8eb2;
+      --white: #eef5ff;
+      --line: rgba(83, 127, 194, .28);
+      --shadow: 0 0 24px rgba(55, 226, 255, .12);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 18% 18%, rgba(148, 87, 255, .18), transparent 30%),
+        radial-gradient(circle at 82% 80%, rgba(255, 79, 197, .14), transparent 32%),
+        #02040d;
+      color: var(--white);
+      font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      user-select: none;
+    }
+
+    button, input { font: inherit; }
+
+    .plugin {
+      position: relative;
+      width: min(1180px, 96vw);
+      aspect-ratio: 1180 / 720;
+      min-height: 540px;
+      overflow: hidden;
+      border: 1px solid rgba(111, 171, 255, .26);
+      border-radius: 18px;
+      background:
+        linear-gradient(135deg, rgba(255,255,255,.025), transparent 38%),
+        var(--bg);
+      box-shadow: 0 28px 80px rgba(0,0,0,.58), inset 0 0 80px rgba(55,226,255,.025);
+    }
+
+    .plugin::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: .15;
+      background: repeating-linear-gradient(
+        0deg, transparent 0, transparent 3px, rgba(255,255,255,.035) 4px
+      );
+      mix-blend-mode: screen;
+    }
+
+    header {
+      height: 78px;
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      align-items: center;
+      gap: 22px;
+      padding: 10px 24px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(5, 9, 28, .84);
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 25px;
+      line-height: 1;
+      letter-spacing: .13em;
+      font-weight: 750;
+    }
+
+    .brand h1 span {
+      color: var(--blue);
+      text-shadow: 0 0 15px rgba(55, 226, 255, .55);
+    }
+
+    .brand p {
+      margin: 8px 0 0;
+      color: var(--pink);
+      font-size: 9px;
+      letter-spacing: .22em;
+    }
+
+    .meters {
+      display: flex;
+      gap: 18px;
+      color: var(--muted);
+      font: 600 10px ui-monospace, SFMono-Regular, Menlo, monospace;
+      white-space: nowrap;
+    }
+
+    .meters b { color: var(--white); font-weight: 600; }
+    .meters .hot { color: var(--pink); }
+
+    .mode-switch {
+      display: flex;
+      padding: 3px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: #0b1028;
+    }
+
+    .mode-switch button {
+      min-width: 126px;
+      height: 34px;
+      border: 0;
+      border-radius: 9px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 750;
+      letter-spacing: .14em;
+      cursor: pointer;
+    }
+
+    .mode-switch button.active {
+      color: #06111c;
+      background: linear-gradient(100deg, var(--blue), #7af3ff);
+      box-shadow: 0 0 22px rgba(55, 226, 255, .34);
+    }
+
+    main { height: calc(100% - 78px); }
+    .view { height: 100%; }
+    .hidden { display: none !important; }
+
+    .simple {
+      display: grid;
+      grid-template-rows: 76px 162px 86px 92px 92px;
+      align-content: center;
+      padding: 4px 90px 18px;
+      text-align: center;
+    }
+
+    .simple h2 {
+      margin: 16px 0 0;
+      font-size: 27px;
+      letter-spacing: .13em;
+      font-weight: 650;
+    }
+
+    .auto-clean {
+      position: relative;
+      justify-self: center;
+      align-self: center;
+      width: 390px;
+      height: 126px;
+      border: 1px solid rgba(55, 226, 255, .48);
+      border-radius: 63px;
+      background:
+        radial-gradient(circle at 50% 15%, rgba(255,255,255,.16), transparent 28%),
+        linear-gradient(120deg, rgba(55,226,255,.14), rgba(148,87,255,.15));
+      color: var(--white);
+      cursor: pointer;
+      box-shadow: inset 0 0 28px rgba(55,226,255,.12), var(--shadow);
+      transition: .25s ease;
+    }
+
+    .auto-clean strong {
+      display: block;
+      font-size: 25px;
+      letter-spacing: .12em;
+    }
+
+    .auto-clean small {
+      display: block;
+      margin-top: 9px;
+      color: var(--muted);
+      font-size: 10px;
+      letter-spacing: .22em;
+    }
+
+    .auto-clean.on {
+      border-color: var(--pink);
+      background:
+        radial-gradient(circle at 50% 18%, rgba(255,255,255,.2), transparent 30%),
+        linear-gradient(120deg, rgba(55,226,255,.4), rgba(255,79,197,.42));
+      box-shadow: 0 0 42px rgba(255,79,197,.24), inset 0 0 30px rgba(55,226,255,.22);
+      transform: scale(1.015);
+    }
+
+    .choice-block { align-self: center; }
+    .choice-block label {
+      display: block;
+      margin-bottom: 10px;
+      color: var(--muted);
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: .2em;
+    }
+
+    .segments {
+      display: flex;
+      padding: 4px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(10, 16, 40, .78);
+    }
+
+    .segments button {
+      flex: 1;
+      height: 38px;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 10px;
+      letter-spacing: .08em;
+      cursor: pointer;
+      transition: .18s ease;
+    }
+
+    .segments button.active {
+      color: var(--white);
+      background: linear-gradient(110deg, rgba(55,226,255,.23), rgba(148,87,255,.25));
+      box-shadow: inset 0 0 0 1px rgba(55,226,255,.3), 0 0 18px rgba(55,226,255,.11);
+    }
+
+    .formal {
+      display: grid;
+      grid-template-columns: minmax(0, 2.05fr) minmax(330px, 1fr);
+      gap: 14px;
+      padding: 12px 18px 16px;
+    }
+
+    .workspace, .rack { min-width: 0; }
+
+    .eq-panel {
+      position: relative;
+      height: 302px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background:
+        linear-gradient(rgba(55,226,255,.035), rgba(55,226,255,0)),
+        var(--panel);
+      box-shadow: inset 0 0 35px rgba(55,226,255,.035);
+    }
+
+    .eq-panel .module-toggle {
+      position: absolute;
+      z-index: 3;
+      top: 10px;
+      left: 10px;
+    }
+
+    #eqSvg { width: 100%; height: 100%; touch-action: none; }
+    .grid-line { stroke: rgba(92, 132, 191, .19); stroke-width: 1; }
+    #eqCurve { fill: none; stroke: var(--blue); stroke-width: 2.5; filter: drop-shadow(0 0 5px #37e2ff88); }
+    .eq-node { cursor: grab; filter: drop-shadow(0 0 5px #37e2ffaa); }
+    .eq-node:active { cursor: grabbing; }
+
+    .band-grid {
+      height: calc(100% - 314px);
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      grid-template-rows: repeat(2, 1fr);
+      gap: 7px;
+      margin-top: 10px;
+    }
+
+    .band {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+      min-width: 0;
+      padding: 5px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: var(--panel);
+    }
+
+    .band-title {
+      grid-column: 1 / -1;
+      color: var(--muted);
+      text-align: center;
+      font-size: 8px;
+      letter-spacing: .14em;
+    }
+
+    .knob-wrap { display: grid; justify-items: center; gap: 2px; min-width: 0; }
+    .knob-wrap span { color: var(--muted); font-size: 7px; letter-spacing: .08em; }
+
+    .knob {
+      --value: .5turn;
+      width: 43px;
+      height: 43px;
+      padding: 0;
+      appearance: none;
+      border: 1px solid rgba(99, 147, 210, .38);
+      border-radius: 50%;
+      background:
+        radial-gradient(circle, #111a3a 0 53%, transparent 55%),
+        conic-gradient(from .64turn, var(--blue) 0 var(--value), rgba(74,101,147,.2) var(--value) .72turn, transparent .72turn);
+      cursor: ns-resize;
+      box-shadow: inset 0 0 10px #0008, 0 0 10px rgba(55,226,255,.07);
+    }
+
+    .knob::-webkit-slider-thumb {
+      appearance: none;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--pink);
+      opacity: 0;
+    }
+
+    .rack {
+      display: grid;
+      grid-template-rows: repeat(4, 1fr) 64px;
+      gap: 8px;
+    }
+
+    .module {
+      min-height: 0;
+      padding: 9px 10px 6px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: var(--panel);
+    }
+
+    .module-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 24px;
+    }
+
+    .module-head strong {
+      font-size: 9px;
+      letter-spacing: .16em;
+    }
+
+    .module-controls {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      margin-top: 3px;
+    }
+
+    .module-controls .knob { width: 48px; height: 48px; }
+    .module-controls .knob-wrap span { font-size: 7px; }
+
+    .module-toggle {
+      height: 23px;
+      padding: 0 10px;
+      border: 1px solid rgba(55,226,255,.33);
+      border-radius: 7px;
+      background: rgba(55,226,255,.12);
+      color: var(--blue);
+      font-size: 8px;
+      font-weight: 750;
+      letter-spacing: .12em;
+      cursor: pointer;
+    }
+
+    .module-toggle.off {
+      border-color: var(--line);
+      color: var(--muted);
+      background: rgba(10, 16, 40, .65);
+    }
+
+    .engine {
+      display: flex;
+      gap: 3px;
+    }
+
+    .engine button {
+      padding: 4px 7px;
+      border: 0;
+      border-radius: 5px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 7px;
+      cursor: pointer;
+    }
+
+    .engine button.active { color: var(--white); background: rgba(148,87,255,.3); }
+
+    .output-strip {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 12px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--panel-2);
+    }
+
+    .output-strip .knob { width: 47px; height: 47px; }
+
+    .hint {
+      position: absolute;
+      right: 20px;
+      bottom: 8px;
+      color: rgba(124,142,178,.55);
+      font-size: 8px;
+      letter-spacing: .08em;
+    }
+
+    @media (max-width: 900px), (max-height: 620px) {
+      body { overflow: auto; align-items: start; padding: 12px; }
+      .plugin { min-width: 885px; }
+    }
+  </style>
+</head>
+<body>
+  <section class="plugin" aria-label="Mint制作-调音的终结和最后的通道条 UI prototype">
+    <header>
+      <div class="brand">
+        <h1>MINT <span>//</span> FINAL CHANNEL</h1>
+        <p>调音的终结和最后的通道条</p>
+      </div>
+      <div class="meters">
+        <span>IN <b id="inMeter">-18.4</b></span>
+        <span>OUT <b id="outMeter">-14.1</b></span>
+        <span>LUFS <b id="lufsMeter">-14.0</b></span>
+        <span>NR <b class="hot" id="nrMeter">8.6 dB</b></span>
+      </div>
+      <nav class="mode-switch" aria-label="Mode">
+        <button class="active" data-mode="simple">SIMPLE</button>
+        <button data-mode="formal">FORMAL</button>
+      </nav>
+    </header>
+
+    <main>
+      <section class="view simple" id="simpleView">
+        <h2>ONE MOVE. READY TO RELEASE.</h2>
+        <button class="auto-clean" id="autoClean">
+          <strong>AUTO CLEAN</strong>
+          <small>CLICK TO ACTIVATE</small>
+        </button>
+        <div class="choice-block">
+          <label>TARGET LOUDNESS</label>
+          <div class="segments" data-choice>
+            <button class="active">STREAMING&nbsp; −14</button>
+            <button>PODCAST&nbsp; −16</button>
+            <button>BROADCAST&nbsp; −23</button>
+          </div>
+        </div>
+        <div class="choice-block">
+          <label>EQ CHARACTER</label>
+          <div class="segments" data-choice>
+            <button class="active">FLAT</button><button>WARM</button><button>BRIGHT</button>
+            <button>VOCAL</button><button>BASS</button><button>AIR</button>
+          </div>
+        </div>
+        <div class="choice-block">
+          <label>SPACE</label>
+          <div class="segments" data-choice>
+            <button>DRY</button><button>ROOM</button><button class="active">STUDIO</button>
+            <button>PLATE</button><button>HALL</button><button>DREAM</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="view formal hidden" id="formalView">
+        <div class="workspace">
+          <div class="eq-panel">
+            <button class="module-toggle" data-toggle>EQ ACTIVE</button>
+            <svg id="eqSvg" viewBox="0 0 760 302" preserveAspectRatio="none">
+              <g id="grid"></g>
+              <path id="eqCurve"></path>
+              <g id="nodes"></g>
+            </svg>
+          </div>
+          <div class="band-grid" id="bandGrid"></div>
+        </div>
+
+        <aside class="rack" id="rack">
+          <section class="module">
+            <div class="module-head">
+              <button class="module-toggle" data-toggle>DENOISE</button>
+              <div class="engine" data-choice>
+                <button class="active">MINT RT</button><button>LIVE</button><button>VOICE</button><button>AI</button>
+              </div>
+            </div>
+            <div class="module-controls" data-knobs="REDUCE:40,SENSE:55,SMOOTH:65,MIX:100"></div>
+          </section>
+          <section class="module">
+            <div class="module-head"><button class="module-toggle off" data-toggle>COMPRESSOR</button></div>
+            <div class="module-controls" data-knobs="THRESH:70,RATIO:11,ATTACK:8,RELEASE:6"></div>
+          </section>
+          <section class="module">
+            <div class="module-head"><button class="module-toggle" data-toggle>REVERB</button></div>
+            <div class="module-controls" data-knobs="PRE:7,DECAY:9,SIZE:45,MIX:12"></div>
+          </section>
+          <section class="module">
+            <div class="module-head"><button class="module-toggle" data-toggle>TRUE PEAK LIMITER</button></div>
+            <div class="module-controls" data-knobs="CEILING:92,DRIVE:33,RELEASE:7,LOOK:25"></div>
+          </section>
+          <div class="output-strip">
+            <div class="knob-wrap"><input class="knob" type="range" value="50"><span>INPUT</span></div>
+            <button class="module-toggle off" data-toggle>LOUDNESS</button>
+            <div class="knob-wrap"><input class="knob" type="range" value="50"><span>OUTPUT</span></div>
+          </div>
+        </aside>
+      </section>
+    </main>
+    <div class="hint">UI PROTOTYPE · NO AUDIO PROCESSING</div>
+  </section>
+
+  <script>
+    const state = {
+      mode: "simple",
+      eq: Array.from({ length: 12 }, (_, i) => ({
+        frequency: [75, 140, 280, 520, 1000, 1900, 3500, 5800, 8500, 12000, 15500, 18500][i],
+        gain: [0, 1.2, -2, 0, .8, 0, 2, -.5, 0, 2.5, 0, 0][i],
+        enabled: i < 10
+      }))
+    };
+
+    document.querySelectorAll(".mode-switch button").forEach(button => {
+      button.addEventListener("click", () => {
+        state.mode = button.dataset.mode;
+        document.querySelectorAll(".mode-switch button").forEach(b => b.classList.toggle("active", b === button));
+        document.getElementById("simpleView").classList.toggle("hidden", state.mode !== "simple");
+        document.getElementById("formalView").classList.toggle("hidden", state.mode !== "formal");
+      });
+    });
+
+    document.querySelectorAll("[data-choice]").forEach(group => {
+      group.querySelectorAll("button").forEach(button => {
+        button.addEventListener("click", () => {
+          group.querySelectorAll("button").forEach(b => b.classList.remove("active"));
+          button.classList.add("active");
+        });
+      });
+    });
+
+    document.querySelectorAll("[data-toggle]").forEach(button => {
+      button.addEventListener("click", () => button.classList.toggle("off"));
+    });
+
+    const autoClean = document.getElementById("autoClean");
+    autoClean.addEventListener("click", () => {
+      autoClean.classList.toggle("on");
+      autoClean.querySelector("small").textContent =
+        autoClean.classList.contains("on") ? "DENOISE + LOUDNESS ACTIVE" : "CLICK TO ACTIVATE";
+    });
+
+    function makeKnob(label, value, onInput) {
+      const wrap = document.createElement("div");
+      wrap.className = "knob-wrap";
+      const input = document.createElement("input");
+      input.className = "knob";
+      input.type = "range";
+      input.min = "0";
+      input.max = "100";
+      input.value = String(value);
+      input.setAttribute("aria-label", label);
+      const caption = document.createElement("span");
+      caption.textContent = label;
+      wrap.append(input, caption);
+      input.addEventListener("input", () => {
+        paintKnob(input);
+        onInput?.(Number(input.value));
+      });
+      paintKnob(input);
+      return wrap;
+    }
+
+    function paintKnob(input) {
+      const fraction = Number(input.value) / 100;
+      input.style.setProperty("--value", `${.64 + fraction * .72}turn`);
+    }
+
+    document.querySelectorAll("[data-knobs]").forEach(container => {
+      container.dataset.knobs.split(",").forEach(definition => {
+        const [label, value] = definition.split(":");
+        container.append(makeKnob(label, Number(value)));
+      });
+    });
+
+    document.querySelectorAll(".output-strip .knob").forEach(paintKnob);
+
+    const bandGrid = document.getElementById("bandGrid");
+    state.eq.forEach((band, index) => {
+      const element = document.createElement("div");
+      element.className = "band";
+      const title = document.createElement("div");
+      title.className = "band-title";
+      title.textContent = `B${index + 1} · ${Math.round(band.frequency)} Hz`;
+      const frequencyValue = Math.log10(band.frequency / 20) / 3 * 100;
+      const gainValue = (band.gain + 24) / 48 * 100;
+      element.append(
+        title,
+        makeKnob("FREQ", frequencyValue, value => {
+          band.frequency = 20 * Math.pow(1000, value / 100);
+          title.textContent = `B${index + 1} · ${Math.round(band.frequency)} Hz`;
+          renderEq();
+        }),
+        makeKnob("GAIN", gainValue, value => {
+          band.gain = value / 100 * 48 - 24;
+          renderEq();
+        })
+      );
+      bandGrid.append(element);
+    });
+
+    const svg = document.getElementById("eqSvg");
+    const nodesGroup = document.getElementById("nodes");
+    const curve = document.getElementById("eqCurve");
+    const grid = document.getElementById("grid");
+    let dragging = -1;
+
+    for (let i = 1; i < 10; i++) {
+      const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      line.setAttribute("class", "grid-line");
+      line.setAttribute("x1", i * 76); line.setAttribute("x2", i * 76);
+      line.setAttribute("y1", 0); line.setAttribute("y2", 302);
+      grid.append(line);
+    }
+    for (let i = 1; i < 6; i++) {
+      const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      line.setAttribute("class", "grid-line");
+      line.setAttribute("x1", 0); line.setAttribute("x2", 760);
+      line.setAttribute("y1", i * 50.33); line.setAttribute("y2", i * 50.33);
+      grid.append(line);
+    }
+
+    function pointFor(band) {
+      return {
+        x: Math.log10(band.frequency / 20) / 3 * 760,
+        y: 151 - band.gain / 24 * 135
+      };
+    }
+
+    function gainAt(t) {
+      return state.eq.reduce((sum, band) => {
+        if (!band.enabled) return sum;
+        const centre = Math.log10(band.frequency / 20) / 3;
+        const d = (t - centre) * 4.2;
+        return sum + band.gain * Math.exp(-d * d * 4);
+      }, 0);
+    }
+
+    function renderEq() {
+      const points = [];
+      for (let i = 0; i <= 150; i++) {
+        const t = i / 150;
+        points.push(`${i ? "L" : "M"} ${t * 760} ${151 - gainAt(t) / 24 * 135}`);
+      }
+      curve.setAttribute("d", points.join(" "));
+      nodesGroup.replaceChildren();
+      state.eq.forEach((band, index) => {
+        if (!band.enabled) return;
+        const point = pointFor(band);
+        const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        group.setAttribute("class", "eq-node");
+        group.dataset.index = index;
+        const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        circle.setAttribute("cx", point.x); circle.setAttribute("cy", point.y); circle.setAttribute("r", 8);
+        circle.setAttribute("fill", index === dragging ? "#ff4fc5" : "#37e2ff");
+        const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        text.setAttribute("x", point.x); text.setAttribute("y", point.y + 3);
+        text.setAttribute("text-anchor", "middle");
+        text.setAttribute("font-size", "8");
+        text.setAttribute("font-weight", "800");
+        text.setAttribute("fill", "#07101d");
+        text.textContent = index + 1;
+        group.append(circle, text);
+        group.addEventListener("pointerdown", event => {
+          dragging = index;
+          svg.setPointerCapture(event.pointerId);
+          renderEq();
+        });
+        nodesGroup.append(group);
+      });
+    }
+
+    svg.addEventListener("pointermove", event => {
+      if (dragging < 0) return;
+      const rect = svg.getBoundingClientRect();
+      const x = Math.max(0, Math.min(760, (event.clientX - rect.left) / rect.width * 760));
+      const y = Math.max(16, Math.min(286, (event.clientY - rect.top) / rect.height * 302));
+      state.eq[dragging].frequency = 20 * Math.pow(1000, x / 760);
+      state.eq[dragging].gain = (151 - y) / 135 * 24;
+      renderEq();
+    });
+
+    svg.addEventListener("pointerup", () => { dragging = -1; renderEq(); });
+    svg.addEventListener("pointercancel", () => { dragging = -1; renderEq(); });
+    svg.addEventListener("dblclick", event => {
+      const rect = svg.getBoundingClientRect();
+      const x = (event.clientX - rect.left) / rect.width * 760;
+      const y = (event.clientY - rect.top) / rect.height * 302;
+      const disabled = state.eq.findIndex(band => !band.enabled);
+      if (disabled >= 0) {
+        state.eq[disabled].enabled = true;
+        state.eq[disabled].frequency = 20 * Math.pow(1000, Math.max(0, Math.min(1, x / 760)));
+        state.eq[disabled].gain = Math.max(-24, Math.min(24, (151 - y) / 135 * 24));
+        renderEq();
+      }
+    });
+
+    setInterval(() => {
+      const active = autoClean.classList.contains("on");
+      const wobble = () => (Math.random() - .5) * .8;
+      document.getElementById("inMeter").textContent = (-18.2 + wobble()).toFixed(1);
+      document.getElementById("outMeter").textContent = ((active ? -14.1 : -17.8) + wobble()).toFixed(1);
+      document.getElementById("lufsMeter").textContent = ((active ? -14 : -17.3) + wobble() * .3).toFixed(1);
+      document.getElementById("nrMeter").textContent = `${(active ? 8.6 + wobble() : 0).toFixed(1)} dB`;
+    }, 500);
+
+    renderEq();
+  </script>
+</body>
+</html>

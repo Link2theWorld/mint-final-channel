@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "dependencies": {
+    "iPlug2": {
+      "repository": "https://github.com/iPlug2/iPlug2.git",
+      "revision": "b64192fe18afd9bc9a1fe324db5aceb48f4a0eee",
+      "license": "zlib-like"
+    },
+    "vst3sdk": {
+      "repository": "https://github.com/steinbergmedia/vst3sdk.git",
+      "revision": "58f8da7936800732561402d7936584ca4505de07",
+      "license": "MIT"
+    },
+    "rnnoise": {
+      "repository": "https://github.com/xiph/rnnoise.git",
+      "revision": "not-enabled-in-0.1.0",
+      "license": "BSD-3-Clause"
+    },
+    "deepfilternet": {
+      "repository": "https://github.com/Rikorose/DeepFilterNet.git",
+      "revision": "not-enabled-in-0.1.0",
+      "license": "MIT OR Apache-2.0"
+    }
+  }
+}
+
