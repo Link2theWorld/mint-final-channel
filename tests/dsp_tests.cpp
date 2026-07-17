@@ -240,8 +240,8 @@ void testDefaultChainRealtimeLatency() {
   processor.setParameters(state);
   const float latencyMs = static_cast<float>(processor.latencySamples()) /
                           44100.0f * 1000.0f;
-  expect(latencyMs < 30.0f,
-         "fixed worst-case latency compensation must remain below 30 ms");
+  expect(latencyMs < 10.0f,
+         "fixed worst-case latency compensation must remain below 10 ms");
 }
 
 void testLatencyIsStableAcrossModes() {
@@ -256,7 +256,7 @@ void testLatencyIsStableAcrossModes() {
          "master bypass must not change reported latency");
   state.masterBypass = false;
   state.autoClean = true;
-  state.limiterLookaheadMs = 20.0f;
+  state.limiterLookaheadMs = 4.0f;
   processor.setParameters(state);
   expect(processor.latencySamples() == baseline,
          "Auto Clean and lookahead changes must not change reported latency");

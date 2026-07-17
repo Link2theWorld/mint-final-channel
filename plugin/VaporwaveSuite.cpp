@@ -338,7 +338,7 @@ void VaporwaveSuite::initializeParameters() {
   GetParam(kParamLimiterCeiling)->InitDouble("Limiter Ceiling", -1, -12, 0, 0.1, "dBTP");
   GetParam(kParamLimiterInputGain)->InitDouble("Limiter Input Gain", 0, -12, 24, 0.1, "dB");
   GetParam(kParamLimiterRelease)->InitDouble("Limiter Release", 80, 10, 1000, 1, "ms");
-  GetParam(kParamLimiterLookahead)->InitDouble("Limiter Lookahead", 2, 0.1, 20, 0.1, "ms");
+  GetParam(kParamLimiterLookahead)->InitDouble("Limiter Lookahead", 2, 0.1, 4, 0.1, "ms");
   GetParam(kParamLimiterTruePeak)->InitBool("Limiter True Peak", true);
   GetParam(kParamLimiterOversampling)->InitEnum("Limiter Oversampling", 1, {"1x", "2x", "4x"});
   GetParam(kParamLanguage)->InitDouble("Interface Language", 0.0, 0.0, 1.0, 0.001);

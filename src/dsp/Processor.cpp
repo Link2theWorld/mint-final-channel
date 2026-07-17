@@ -374,7 +374,7 @@ public:
     loudness_.prepare(sampleRate_);
     limiter_.prepare(sampleRate_);
     fixedLatency_ = SpectralDenoiser::kFftSize +
-      static_cast<int>(std::ceil(0.020 * sampleRate_));
+      static_cast<int>(std::ceil(0.004 * sampleRate_));
     compensationL_.assign(static_cast<std::size_t>(fixedLatency_ + 1), 0.0f);
     compensationR_.assign(static_cast<std::size_t>(fixedLatency_ + 1), 0.0f);
     reset();

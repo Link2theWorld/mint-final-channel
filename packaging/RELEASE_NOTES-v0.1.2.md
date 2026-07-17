@@ -8,6 +8,8 @@ Stability and Simple-mode behavior update.
   preventing DAW processing-graph rebuilds from the audio thread.
 - Added fixed worst-case latency compensation across active, bypassed and
   module-toggle states so latency never changes during playback.
+- Kept fixed worst-case latency below 10 ms at 44.1/48 kHz by constraining the
+  realtime limiter lookahead range to 0.1-4 ms.
 - Made master bypass output the latency-aligned dry signal.
 - Made Auto Clean engage denoising, compression, loudness control and limiting
   as one audible processing macro.
