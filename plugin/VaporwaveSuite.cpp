@@ -53,9 +53,8 @@ VaporwaveSuite::VaporwaveSuite(const InstanceInfo& info)
     graphics->AttachControl(new ITextControl(
       IRECT(24, 47, 500, 70), text("THE FINAL WORD IN CHANNEL STRIPS", "调音的终结和最后的通道条"),
       IText(10.0f, kPink, font, EAlign::Near)));
-    graphics->AttachControl(new IVToggleControl(
-      IRECT(385, 18, 510, 58), kParamMasterBypass, text("MASTER", "主控"),
-      compactStyle, text("LIVE", "工作"), text("BYPASS", "旁路")), kNoTag, "simple");
+    graphics->AttachControl(new HardwareBypassControl(
+      IRECT(365, 14, 515, 62), kParamMasterBypass, font, zh), kNoTag, "simple");
     if (zh) {
       graphics->AttachControl(new IVTabSwitchControl(
         IRECT(870, 18, 1154, 52), kParamViewMode,
@@ -121,9 +120,8 @@ VaporwaveSuite::VaporwaveSuite(const InstanceInfo& info)
     graphics->AttachControl(new ITextControl(
       IRECT(24, 47, 380, 70), text("THE FINAL WORD IN CHANNEL STRIPS", "调音的终结和最后的通道条"),
       IText(10.0f, kPink, font, EAlign::Near)), kNoTag, "formal");
-    graphics->AttachControl(new IVToggleControl(
-      IRECT(385, 18, 510, 58), kParamMasterBypass, "MASTER",
-      technicalCompactStyle, "LIVE", "BYPASS"), kNoTag, "formal");
+    graphics->AttachControl(new HardwareBypassControl(
+      IRECT(365, 14, 515, 62), kParamMasterBypass, kFont, false), kNoTag, "formal");
     graphics->AttachControl(new EqGraphControl(
       IRECT(20, 88, 775, 390)), kNoTag, "formal");
     graphics->AttachControl(new IVToggleControl(
