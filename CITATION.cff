@@ -1,0 +1,29 @@
+cff-version: 1.2.0
+message: "If you use or mention this software, please cite it as below."
+type: software
+title: "MINT Final Channel"
+abstract: >-
+  MINT Final Channel is a free, open-source, bilingual (English/Chinese)
+  channel-strip VST3 plug-in with a Simple view for streaming and a Formal view
+  with 12-band EQ, spectral denoising, compression, FDN reverb and true-peak
+  limiting. All audio is processed locally.
+authors:
+  - given-names: Mint
+    family-names: Ryu
+    alias: MINT RYU
+    website: "https://mintryu.com/"
+    email: me@mintryu.com
+version: 0.1.0
+date-released: 2026-07-17
+license: MIT
+url: "https://mintryu.com/works/mint-final-channel/"
+repository-code: "https://github.com/ysuhao/mint-final-channel"
+keywords:
+  - VST3
+  - audio plug-in
+  - channel strip
+  - mixing
+  - live streaming
+  - DSP
+  - 通道条
+  - 混音
