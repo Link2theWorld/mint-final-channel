@@ -53,9 +53,8 @@ VaporwaveSuite::VaporwaveSuite(const InstanceInfo& info)
     graphics->AttachControl(new ITextControl(
       IRECT(24, 47, 500, 70), text("THE FINAL WORD IN CHANNEL STRIPS", "调音的终结和最后的通道条"),
       IText(10.0f, kPink, font, EAlign::Near)));
-    graphics->AttachControl(new IVToggleControl(
-      IRECT(385, 18, 510, 58), kParamMasterBypass, text("MASTER", "主控"),
-      compactStyle, text("LIVE", "工作"), text("BYPASS", "旁路")), kNoTag, "simple");
+    graphics->AttachControl(new HardwareBypassControl(
+      IRECT(365, 14, 515, 62), kParamMasterBypass, font, zh), kNoTag, "simple");
     if (zh) {
       graphics->AttachControl(new IVTabSwitchControl(
         IRECT(870, 18, 1154, 52), kParamViewMode,
@@ -82,8 +81,13 @@ VaporwaveSuite::VaporwaveSuite(const InstanceInfo& info)
     graphics->AttachControl(new IVToggleControl(
       IRECT(390, 185, 790, 315), kParamAutoClean, text("AUTO CLEAN", "自动清理"),
       style.WithValueText(IText(24.0f, kWhite, font)),
-      text("BYPASS", "旁路"), text("ACTIVE", "启用")),
+      text("OFF", "关闭"), text("ON", "开启")),
       kNoTag, "simple");
+    graphics->AttachControl(new ITextControl(
+      IRECT(280, 318, 900, 350),
+      text("DENOISE + COMPRESS + LEVEL + LIMIT",
+           "降噪 + 压缩 + 响度整理 + 限幅"),
+      IText(zh ? 11.0f : 9.0f, kMuted, font)), kNoTag, "simple");
     if (zh) {
       graphics->AttachControl(new IVTabSwitchControl(
         IRECT(210, 370, 970, 425), kParamLoudnessTarget,
@@ -121,9 +125,8 @@ VaporwaveSuite::VaporwaveSuite(const InstanceInfo& info)
     graphics->AttachControl(new ITextControl(
       IRECT(24, 47, 380, 70), text("THE FINAL WORD IN CHANNEL STRIPS", "调音的终结和最后的通道条"),
       IText(10.0f, kPink, font, EAlign::Near)), kNoTag, "formal");
-    graphics->AttachControl(new IVToggleControl(
-      IRECT(385, 18, 510, 58), kParamMasterBypass, "MASTER",
-      technicalCompactStyle, "LIVE", "BYPASS"), kNoTag, "formal");
+    graphics->AttachControl(new HardwareBypassControl(
+      IRECT(365, 14, 515, 62), kParamMasterBypass, kFont, false), kNoTag, "formal");
     graphics->AttachControl(new EqGraphControl(
       IRECT(20, 88, 775, 390)), kNoTag, "formal");
     graphics->AttachControl(new IVToggleControl(
@@ -277,9 +280,9 @@ void VaporwaveSuite::initializeParameters() {
   GetParam(kParamEqPreset)->InitEnum(
     "EQ Character", 0, {"Flat", "Warm", "Bright", "Vocal", "Bass", "Air", "Custom"});
   GetParam(kParamReverbPreset)->InitEnum(
-    "Space", 2, {"Dry", "Room", "Studio", "Plate", "Hall", "Dream", "Custom"});
+    "Space", 0, {"Dry", "Room", "Studio", "Plate", "Hall", "Dream", "Custom"});
 
-  GetParam(kParamDenoiseEnabled)->InitBool("Denoise Enabled", true);
+  GetParam(kParamDenoiseEnabled)->InitBool("Denoise Enabled", false);
   GetParam(kParamDenoiseEngine)->InitEnum(
     "Denoise Engine", 0, {"Mint RT <10ms", "Live", "Voice Live", "Voice AI"});
   GetParam(kParamContentMode)->InitEnum("Content", 0, {"Auto", "Voice", "Music"});
@@ -321,21 +324,21 @@ void VaporwaveSuite::initializeParameters() {
   GetParam(kParamCompressorAutoGain)->InitBool("Compressor Auto Gain", false);
   GetParam(kParamCompressorMix)->InitDouble("Compressor Mix", 100, 0, 100, 0.1, "%");
 
-  GetParam(kParamReverbEnabled)->InitBool("Reverb Enabled", true);
+  GetParam(kParamReverbEnabled)->InitBool("Reverb Enabled", false);
   GetParam(kParamReverbPreDelay)->InitDouble("Reverb Pre-delay", 12, 0, 200, 0.1, "ms");
   GetParam(kParamReverbDecay)->InitDouble("Reverb Decay", 1.2, 0.1, 12, 0.01, "s");
   GetParam(kParamReverbSize)->InitDouble("Reverb Size", 45, 0, 100, 0.1, "%");
   GetParam(kParamReverbDamping)->InitDouble("Reverb Damping", 55, 0, 100, 0.1, "%");
   GetParam(kParamReverbDiffusion)->InitDouble("Reverb Diffusion", 70, 0, 100, 0.1, "%");
   GetParam(kParamReverbWidth)->InitDouble("Reverb Width", 100, 0, 200, 0.1, "%");
-  GetParam(kParamReverbMix)->InitDouble("Reverb Mix", 12, 0, 100, 0.1, "%");
+  GetParam(kParamReverbMix)->InitDouble("Reverb Mix", 0, 0, 100, 0.1, "%");
   GetParam(kParamLoudnessEnabled)->InitBool("Loudness Follow", false);
 
-  GetParam(kParamLimiterEnabled)->InitBool("Limiter Enabled", true);
+  GetParam(kParamLimiterEnabled)->InitBool("Limiter Enabled", false);
   GetParam(kParamLimiterCeiling)->InitDouble("Limiter Ceiling", -1, -12, 0, 0.1, "dBTP");
   GetParam(kParamLimiterInputGain)->InitDouble("Limiter Input Gain", 0, -12, 24, 0.1, "dB");
   GetParam(kParamLimiterRelease)->InitDouble("Limiter Release", 80, 10, 1000, 1, "ms");
-  GetParam(kParamLimiterLookahead)->InitDouble("Limiter Lookahead", 2, 0.1, 20, 0.1, "ms");
+  GetParam(kParamLimiterLookahead)->InitDouble("Limiter Lookahead", 2, 0.1, 4, 0.1, "ms");
   GetParam(kParamLimiterTruePeak)->InitBool("Limiter True Peak", true);
   GetParam(kParamLimiterOversampling)->InitEnum("Limiter Oversampling", 1, {"1x", "2x", "4x"});
   GetParam(kParamLanguage)->InitDouble("Interface Language", 0.0, 0.0, 1.0, 0.001);
@@ -411,11 +414,6 @@ void VaporwaveSuite::OnReset() {
 
 void VaporwaveSuite::ProcessBlock(sample** inputs, sample** outputs, int nFrames) {
   processor_.setParameters(parameterSnapshot());
-  const int latency = processor_.latencySamples();
-  if (latency != lastLatency_) {
-    lastLatency_ = latency;
-    SetLatency(latency);
-  }
   const int inputChannels = std::max(1, NInChansConnected());
   const int outputChannels = std::max(1, NOutChansConnected());
   int offset = 0;
@@ -488,9 +486,9 @@ void VaporwaveSuite::applyEqPreset(int preset) {
 void VaporwaveSuite::applyReverbPreset(int preset) {
   struct Preset { double pre; double decay; double size; double damping; double mix; };
   static constexpr std::array<Preset, 6> presets {{
-    {0, 0.5, 30, 60, 0}, {8, 0.65, 30, 65, 10},
-    {14, 1.1, 42, 58, 12}, {20, 1.8, 50, 35, 16},
-    {28, 3.2, 82, 48, 20}, {45, 5.5, 100, 25, 28}
+    {0, 0.5, 30, 60, 0}, {8, 0.75, 34, 62, 18},
+    {14, 1.3, 48, 55, 24}, {20, 2.0, 58, 35, 30},
+    {28, 3.5, 84, 45, 38}, {45, 5.8, 100, 22, 48}
   }};
   const auto& value = presets[static_cast<std::size_t>(std::clamp(preset, 0, 5))];
   GetParam(kParamReverbPreDelay)->Set(value.pre);
@@ -498,6 +496,7 @@ void VaporwaveSuite::applyReverbPreset(int preset) {
   GetParam(kParamReverbSize)->Set(value.size);
   GetParam(kParamReverbDamping)->Set(value.damping);
   GetParam(kParamReverbMix)->Set(value.mix);
+  GetParam(kParamReverbEnabled)->Set(preset == 0 ? 0.0 : 1.0);
 }
 
 #if IPLUG_EDITOR

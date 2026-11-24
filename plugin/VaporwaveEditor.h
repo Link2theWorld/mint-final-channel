@@ -17,6 +17,8 @@ inline const IColor kPanel = IColor(255, 15, 23, 52);
 inline const IColor kBlue = IColor(255, 55, 226, 255);
 inline const IColor kPink = IColor(255, 255, 79, 197);
 inline const IColor kPurple = IColor(255, 148, 87, 255);
+inline const IColor kLiveGreen = IColor(255, 75, 255, 151);
+inline const IColor kBypassRed = IColor(255, 255, 86, 105);
 inline const IColor kMuted = IColor(255, 205, 219, 242);
 inline const IColor kWhite = IColor(255, 250, 252, 255);
 inline constexpr const char* kFont = "MintUI";
@@ -40,6 +42,56 @@ inline IVStyle CompactStyle(const char* font = kFont, bool cjk = false) {
     .WithLabelText(IText(cjk ? 8.5f : 7.0f, kMuted, font))
     .WithValueText(IText(cjk ? 10.0f : 8.0f, kWhite, font));
 }
+
+class HardwareBypassControl final : public ISwitchControlBase {
+public:
+  HardwareBypassControl(const IRECT& bounds, int paramIdx, const char* font,
+                        bool chinese)
+    : ISwitchControlBase(bounds, paramIdx, SplashClickActionFunc),
+      font_(font), chinese_(chinese) {}
+
+  void Draw(IGraphics& g) override {
+    const bool bypassed = GetValue() >= 0.5;
+    const IColor led = bypassed ? kBypassRed : kLiveGreen;
+    const float pressedOffset = bypassed ? 2.0f : 0.0f;
+    const IRECT shadow(mRECT.L + 2.0f, mRECT.T + 5.0f,
+                       mRECT.R - 2.0f, mRECT.B + 1.0f);
+    const IRECT bezel(mRECT.L, mRECT.T, mRECT.R, mRECT.B - 3.0f);
+    const IRECT face(mRECT.L + 3.0f, mRECT.T + 3.0f + pressedOffset,
+                     mRECT.R - 3.0f, mRECT.B - 6.0f + pressedOffset);
+
+    g.FillRoundRect(IColor(180, 0, 0, 0), shadow, 8.0f);
+    g.FillRoundRect(IColor(255, 5, 8, 20), bezel, 8.0f);
+    g.DrawRoundRect(IColor(255, 69, 82, 119), bezel, 8.0f, nullptr, 1.5f);
+    g.FillRoundRect(bypassed ? IColor(255, 47, 19, 35)
+                              : IColor(255, 14, 48, 48),
+                    face, 6.0f);
+    g.DrawRoundRect(led, face, 6.0f, nullptr, 1.5f);
+
+    const float ledX = face.L + 14.0f;
+    const float ledY = face.MH();
+    g.FillCircle(IColor(48, led.R, led.G, led.B), ledX, ledY, 8.0f);
+    g.FillCircle(led, ledX, ledY, 4.5f);
+    g.FillCircle(IColor(210, 255, 255, 255), ledX - 1.5f, ledY - 1.5f, 1.2f);
+
+    const IRECT textRect(face.L + 27.0f, face.T + 1.0f,
+                         face.R - 4.0f, face.B - 1.0f);
+    const char* primary = bypassed
+      ? (chinese_ ? "已旁路" : "BYPASSED")
+      : (chinese_ ? "启用" : "ACTIVE");
+    const char* secondary = bypassed
+      ? (chinese_ ? "原始信号" : "DRY SIGNAL")
+      : (chinese_ ? "正在处理" : "PROCESSING");
+    g.DrawText(IText(chinese_ ? 10.5f : 9.5f, led, font_, EAlign::Near,
+                     EVAlign::Top), primary, textRect);
+    g.DrawText(IText(chinese_ ? 8.5f : 7.5f, kWhite, font_, EAlign::Near,
+                     EVAlign::Bottom), secondary, textRect);
+  }
+
+private:
+  const char* font_ = kFont;
+  bool chinese_ = false;
+};
 
 class EqGraphControl final : public IControl {
 public:
